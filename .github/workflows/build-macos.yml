@@ -1,0 +1,51 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build macOS binaries
+    runs-on: macos-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache-dependency-path: go.sum
+
+      - name: Show Go version
+        run: go version
+
+      - name: Build darwin binaries
+        run: |
+          make darwin-all
+          ls -lh bin/
+
+      - name: Compress binaries
+        run: |
+          cd bin
+          for f in mihomo-darwin-*; do
+            gzip -k -f "$f"
+          done
+          ls -lh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mihomo-darwin
+          path: bin/mihomo-darwin-*.gz
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" bin/mihomo-darwin-*.gz --generate-notes
