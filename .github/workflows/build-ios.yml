@@ -1,0 +1,72 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS mihomo core
+    runs-on: macos-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache-dependency-path: go.sum
+
+      - name: Show toolchain
+        run: |
+          go version
+          go tool dist list | grep -E '^(ios|darwin)'
+
+      - name: Build darwin-arm64 core (iOS compatible)
+        run: |
+          VERSION=$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
+          BUILDTIME=$(date -u)
+          mkdir -p bin
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -tags with_gvisor -trimpath \
+            -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=$VERSION' \
+              -X 'github.com/metacubex/mihomo/constant.BuildTime=$BUILDTIME' \
+              -w -s -buildid=" \
+            -o bin/mihomo-darwin-arm64 main.go
+          file bin/mihomo-darwin-arm64
+
+      - name: Build ios-arm64 core (cgo, needs Xcode)
+        continue-on-error: true
+        run: |
+          VERSION=$(git describe --tags 2>/dev/null || git rev-parse --short HEAD)
+          BUILDTIME=$(date -u)
+          GOOS=ios GOARCH=arm64 CGO_ENABLED=1 go build -tags with_gvisor -trimpath \
+            -ldflags "-X 'github.com/metacubex/mihomo/constant.Version=$VERSION' \
+              -X 'github.com/metacubex/mihomo/constant.BuildTime=$BUILDTIME' \
+              -w -s -buildid=" \
+            -o bin/mihomo-ios-arm64 main.go
+          file bin/mihomo-ios-arm64
+
+      - name: Compress artifacts
+        run: |
+          cd bin
+          for f in mihomo-darwin-arm64 mihomo-ios-arm64; do
+            [ -f "$f" ] && gzip -k -f "$f"
+          done
+          ls -lh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mihomo-ios-core
+          path: bin/mihomo-*.gz
+          if-no-files-found: warn
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" bin/mihomo-*.gz --generate-notes
