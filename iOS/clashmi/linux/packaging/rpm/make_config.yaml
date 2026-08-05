@@ -1,0 +1,21 @@
+display_name: Clash Mi
+summary: Clash Mi
+group: Applications/Internet
+vendor: KaringX
+packager: KaringX
+license: Other
+priority: optional
+section: x11
+essential: false
+url: https://clashmi.app
+icon: assets/images/app_icon_256.png
+
+keywords:
+  - Clash Mi
+
+generic_name: Clash Mi
+
+categories:
+  - Applications/Internet
+
+startup_notify: true

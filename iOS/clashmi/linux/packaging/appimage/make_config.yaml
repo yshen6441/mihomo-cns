@@ -1,0 +1,14 @@
+display_name: Clash Mi
+package_name: clashmi
+maintainer:
+  name: KaringX
+
+icon: assets/images/app_icon_256.png
+
+keywords:
+  - Clash Mi
+
+generic_name: Clash Mi
+
+categories:
+  - Network

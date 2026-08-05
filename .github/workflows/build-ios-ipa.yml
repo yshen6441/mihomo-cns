@@ -1,0 +1,75 @@
+name: Build iOS IPA (jailbreak)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ipa:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.6'
+
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.8'
+
+      - name: Build Libclash.xcframework
+        run: |
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          export GOPROXY=https://goproxy.cn,direct
+          gomobile init
+          gomobile bind \
+            -target=ios \
+            -o iOS/clashmi/bind/apple/Libclash.xcframework \
+            github.com/metacubex/mihomo/iOS/libclash
+
+      - name: Flutter pub get
+        working-directory: iOS/clashmi
+        run: flutter pub get
+
+      - name: Build iOS app (no codesign)
+        working-directory: iOS/clashmi
+        run: flutter build ios --release --no-codesign
+
+      - name: Install ldid
+        run: brew install ldid
+
+      - name: Sign with ldid and package ipa
+        working-directory: iOS/clashmi
+        run: |
+          set -e
+          APP=$(find build/ios/iphoneos -maxdepth 1 -name "*.app" | head -1)
+          echo "APP bundle: $APP"
+          find "$APP" -type f -print0 | xargs -0 file | grep 'Mach-O' | cut -d: -f1 | while read -r f; do
+            echo "ldid sign: $f"
+            ldid -S "$f"
+          done
+          ldid -S "$APP"
+          rm -rf /tmp/Payload
+          mkdir -p /tmp/Payload
+          cp -R "$APP" /tmp/Payload/
+          cd /tmp
+          rm -f clashmi-ios.ipa
+          zip -rqy clashmi-ios.ipa Payload
+          ls -lh clashmi-ios.ipa
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clashmi-ios-ipa
+          path: /tmp/clashmi-ios.ipa
