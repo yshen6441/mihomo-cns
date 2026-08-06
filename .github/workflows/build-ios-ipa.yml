@@ -22,6 +22,11 @@ jobs:
           go install golang.org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
 
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.4'
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
