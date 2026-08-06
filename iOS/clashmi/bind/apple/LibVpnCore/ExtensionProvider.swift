@@ -210,9 +210,10 @@ extension ExtensionProvider {
         setupOptions.errorFile = config!.err_path
 
         do {
-            try LibclashSetup(setupOptions)
-        } catch let err {
-            throw VpnError.Error("LibclashSetup failed: \(err.localizedDescription)")
+            var err: NSError?
+            if !LibclashSetup(setupOptions, &err) {
+                throw VpnError.Error("LibclashSetup failed: \(err?.localizedDescription ?? "unknown error")")
+            }
         }
     }
 
@@ -240,14 +241,18 @@ extension ExtensionProvider {
 
         let tunInterface = ExtensionPlatformInterface(self)
         do {
-            try LibclashStart(startOptions, tunInterface)
-        } catch let err {
-            throw VpnError.Error("LibclashStart failed: \(err.localizedDescription)")
+            var err: NSError?
+            if !LibclashStart(startOptions, tunInterface, &err) {
+                throw VpnError.Error("LibclashStart failed: \(err?.localizedDescription ?? "unknown error")")
+            }
         }
     }
 
     fileprivate func stopService() async throws {
-        try LibclashStop()
+        var err: NSError?
+        if !LibclashStop(&err) {
+            throw VpnError.Error("LibclashStop failed: \(err?.localizedDescription ?? "unknown error")")
+        }
     }
 
     func restartService(extra: inout [String: String]) async throws {

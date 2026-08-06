@@ -14,11 +14,10 @@ public class ExtensionPlatformInterface: NSObject, LibclashPlatformInterfaceProt
         self.tunnel = tunnel
     }
 
-    public func openTun(_ options: LibclashTunOptionsProtocol?, ret0_: UnsafeMutablePointer<Int32>?) throws -> Bool {
+    public func openTun(_ options: LibclashTunOptionsProtocol?, ret0_: UnsafeMutablePointer<Int32>?) throws {
         try runBlocking { [self] in
             try await openTun0(options, ret0_)
         }
-        return true
     }
 
     private func openTun0(_ options: LibclashTunOptionsProtocol?, _ ret0_: UnsafeMutablePointer<Int32>?) async throws {
@@ -204,7 +203,7 @@ public class ExtensionPlatformInterface: NSObject, LibclashPlatformInterfaceProt
         ret0_.pointee = tun_fd
     }
 
-    public func findConnectionOwner(_: Int32, sourceAddress _: String?, sourcePort _: Int32, destinationAddress _: String?, destinationPort _: Int32, ret0_ _: UnsafeMutablePointer<Int32>?) throws -> Bool {
+    public func findConnectionOwner(_ ipProtocol: Int32, sourceAddress: String?, sourcePort: Int32, destinationAddress: String?, destinationPort: Int32, ret0_: UnsafeMutablePointer<Int32>?) throws {
         throw NSError(domain: "not implemented", code: 0)
     }
 
