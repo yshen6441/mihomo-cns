@@ -22,7 +22,7 @@ class VpnServiceHandler {
     private func loadOrCreateManager() async throws -> NETunnelProviderManager {
         if let cachedManager { return cachedManager }
         let managers = try await NETunnelProviderManager.loadAllFromPreferences()
-        if let found = managers.first(where: { $0.protocolConfiguration?.providerBundleIdentifier == bundleIdentifier }) {
+        if let found = managers.first(where: { ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == bundleIdentifier }) {
             cachedManager = found
             return found
         }
