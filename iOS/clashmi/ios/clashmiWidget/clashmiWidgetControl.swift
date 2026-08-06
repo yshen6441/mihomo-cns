@@ -5,12 +5,14 @@
 //  Created by user on 2026/1/19.
 //
 
+import WidgetKit
 import AppIntents
 import SwiftUI
-import WidgetKit
 
 import NetworkExtension
 
+// iOS 18 专属：控制中心 ControlWidget
+@available(iOS 18.0, *)
 struct clashmiWidgetControl: ControlWidget {
     public static let controlKind: String = "com.nebula.clashmi.clashmiWidget.ControlCenterToggle"
     private static let bundleIdentifier = "com.nebula.clashmi.clashmiService"
@@ -43,6 +45,7 @@ struct clashmiWidgetControl: ControlWidget {
     }
 }
 
+@available(iOS 18.0, *)
 extension clashmiWidgetControl {
     struct Provider: ControlValueProvider {
          var previewValue: Bool {
@@ -61,6 +64,7 @@ extension clashmiWidgetControl {
     }
 }
 
+@available(iOS 18.0, *)
 struct StartVPNServiceIntent: SetValueIntent {
     static let title: LocalizedStringResource = "ON/OFF"
 

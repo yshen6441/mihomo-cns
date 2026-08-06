@@ -75,13 +75,29 @@ jobs:
           set -e
           APP=$(find ios/build/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
           echo "APP bundle: $APP"
+          # 预处理 entitlements，替换 AppIdentifierPrefix 占位符
+          sed 's/\$(AppIdentifierPrefix)//g' ios/Runner/Runner.entitlements > /tmp/ent-runner.plist
+          sed 's/\$(AppIdentifierPrefix)//g' ios/clashmiWidget/clashmiWidgetExtension.entitlements > /tmp/ent-widget.plist
+          sed 's/\$(AppIdentifierPrefix)//g' ios/clashmiService/clashmiService.entitlements > /tmp/ent-service.plist
           find "$APP" -type f -print0 | while read -d '' -r f; do
             if file "$f" | grep -q 'Mach-O'; then
-              echo "ldid sign: $f"
-              ldid -S "$f"
+              case "$f" in
+                *PlugIns/clashmiWidgetExtension.appex/*)
+                  echo "ldid sign (widget): $f"
+                  ldid -S/tmp/ent-widget.plist "$f" ;;
+                *PlugIns/clashmiService.appex/*)
+                  echo "ldid sign (service): $f"
+                  ldid -S/tmp/ent-service.plist "$f" ;;
+                *"$APP/Clash Mi")
+                  echo "ldid sign (main): $f"
+                  ldid -S/tmp/ent-runner.plist "$f" ;;
+                *)
+                  echo "ldid sign: $f"
+                  ldid -S "$f" ;;
+              esac
             fi
           done
-          ldid -S "$APP"
+          ldid -S/tmp/ent-runner.plist "$APP"
           rm -rf /tmp/Payload
           mkdir -p /tmp/Payload
           cp -R "$APP" /tmp/Payload/
