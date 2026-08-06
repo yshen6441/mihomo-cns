@@ -52,13 +52,15 @@ jobs:
         run: flutter pub get
 
       - name: Build iOS app (no codesign)
-        working-directory: iOS/clashmi/ios
+        working-directory: iOS/clashmi
         run: |
-          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee /tmp/xcb.log
+            SYMROOT="$PWD/build" CODE_SIGNING_ALLOWED=NO build 2>&1 | tee /tmp/xcb.log
           echo "=== ERROR DIAGNOSTICS ==="
-          grep -B3 -A18 "does not conform\|error:" /tmp/xcb.log | head -200
+          grep -B3 -A18 "does not conform\|error:" /tmp/xcb.log | head -200 || true
+          echo "=== BUILD OUTPUT ==="
+          find build/Release-iphoneos -maxdepth 1 -name "*.app" -print
           echo "=== END ==="
 
       - name: Install ldid
@@ -68,7 +70,7 @@ jobs:
         working-directory: iOS/clashmi
         run: |
           set -e
-          APP=$(find build/ios/iphoneos -maxdepth 1 -name "*.app" | head -1)
+          APP=$(find build/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
           echo "APP bundle: $APP"
           find "$APP" -type f -print0 | xargs -0 file | grep 'Mach-O' | cut -d: -f1 | while read -r f; do
             echo "ldid sign: $f"
