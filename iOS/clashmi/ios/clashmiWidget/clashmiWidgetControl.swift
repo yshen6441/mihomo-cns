@@ -73,7 +73,7 @@ struct StartVPNServiceIntent: SetValueIntent {
 
     func perform() async throws -> some IntentResult {
         if await FileManager.default.fileExists(atPath: clashmiWidgetControl.configFile.path()) {
-            await withCheckedContinuation { continuation in
+            _ = await withCheckedContinuation { continuation in
                 if value {
                     VpnServiceHandler.shared.start(timeoutInSeconds: 30) { err in
                         continuation.resume(returning: err == nil)

@@ -11,14 +11,6 @@ import SwiftUI
 @main
 struct clashmiWidgetBundle: WidgetBundle {
     var body: some Widget {
-        #if compiler(>=6.0)
-        if #available(iOS 18.0, *) {
-            clashmiWidgetControl()
-        } else {
-            clashmiStatusWidget()
-        }
-        #else
         clashmiStatusWidget()
-        #endif
     }
 }
