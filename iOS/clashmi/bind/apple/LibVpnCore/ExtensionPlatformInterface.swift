@@ -37,8 +37,8 @@ public class ExtensionPlatformInterface: NSObject, LibclashPlatformInterfaceProt
         if options.getAutoRoute() {
             settings.mtu = NSNumber(value: options.getMTU())
 
-            let dnsServer = try options.getDNSServerAddress()
-            let dnsSettings = NEDNSSettings(servers: [dnsServer.value])
+            let dnsServer = options.getDNSServerAddress()
+            let dnsSettings = NEDNSSettings(servers: [dnsServer?.value ?? ""])
             settings.dnsSettings = dnsSettings
 
             var ipv4Address: [String] = []
