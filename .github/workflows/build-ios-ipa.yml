@@ -52,8 +52,14 @@ jobs:
         run: flutter pub get
 
       - name: Build iOS app (no codesign)
-        working-directory: iOS/clashmi
-        run: flutter build ios --release --no-codesign
+        working-directory: iOS/clashmi/ios
+        run: |
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee /tmp/xcb.log
+          echo "=== ERROR DIAGNOSTICS ==="
+          grep -B3 -A18 "does not conform\|error:" /tmp/xcb.log | head -200
+          echo "=== END ==="
 
       - name: Install ldid
         run: brew install ldid
