@@ -117,11 +117,11 @@ class NativeVpnServiceManager {
         return cachedManager?.connection as? NETunnelProviderSession
     }
 
-    private func runningSession() -> NETunnelProviderSession? {
+    private func runningSession() async -> NETunnelProviderSession? {
         if let session = currentSession(), session.status == .connected || session.status == .connecting {
             return session
         }
-        let managers = (try? NETunnelProviderManager.loadAllFromPreferences()) ?? []
+        let managers = (try? await NETunnelProviderManager.loadAllFromPreferences()) ?? []
         for m in managers where m.isEnabled {
             if let session = m.connection as? NETunnelProviderSession,
                session.status == .connected || session.status == .connecting {
@@ -183,7 +183,7 @@ class NativeVpnServiceManager {
     }
 
     func clashiApiConnections(showTraffic: Bool) async -> String {
-        guard let session = runningSession() else { return "{}" }
+        guard let session = await runningSession() else { return "{}" }
         let message: [String: Any] = [
             "messageId": "clashiApiConnections",
             "messageParams": showTraffic ? "true" : "false",
@@ -192,7 +192,7 @@ class NativeVpnServiceManager {
     }
 
     func clashiApiTraffic() async -> String {
-        guard let session = runningSession() else { return "{\"up\":0,\"down\":0}" }
+        guard let session = await runningSession() else { return "{\"up\":0,\"down\":0}" }
         let message: [String: Any] = [
             "messageId": "clashiApiTraffic",
             "messageParams": "",
