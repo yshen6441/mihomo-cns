@@ -43,6 +43,10 @@ jobs:
             -o iOS/clashmi/bind/apple/Libclash.xcframework \
             github.com/metacubex/mihomo/iOS/libclash
 
+      - name: Inspect generated headers
+        run: |
+          find iOS/clashmi/bind/apple/Libclash.xcframework -name "*.h" -exec sh -c 'echo "=== {} ==="; grep -nE "openTun|findConnectionOwner|packageName|protectFd|LibclashPlatformInterface|LibclashTunOptions|getDNSServerAddress|NS_SWIFT" "$1"' sh {} \;
+
       - name: Flutter pub get
         working-directory: iOS/clashmi
         run: flutter pub get
