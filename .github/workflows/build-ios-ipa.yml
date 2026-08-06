@@ -43,25 +43,28 @@ jobs:
             -o iOS/clashmi/bind/apple/Libclash.xcframework \
             github.com/metacubex/mihomo/iOS/libclash
 
-      - name: Inspect generated headers
-        run: |
-          find iOS/clashmi/bind/apple/Libclash.xcframework -name "*.h" -exec sh -c 'echo "=== {} ==="; grep -nE "openTun|findConnectionOwner|packageName|protectFd|LibclashPlatformInterface|LibclashTunOptions|getDNSServerAddress|NS_SWIFT" "$1"' sh {} \;
-
       - name: Flutter pub get
         working-directory: iOS/clashmi
         run: flutter pub get
 
+      - name: Install CocoaPods dependencies
+        working-directory: iOS/clashmi/ios
+        run: pod install
+
       - name: Build iOS app (no codesign)
         working-directory: iOS/clashmi/ios
         run: |
+          set +e
           xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee /tmp/xcb.log
+            SYMROOT="$PWD/build" CODE_SIGNING_ALLOWED=NO build > /tmp/xcb.log 2>&1
+          XCB=$?
           echo "=== ERROR DIAGNOSTICS ==="
-          grep -B3 -A18 "does not conform\|error:" /tmp/xcb.log | head -200 || true
+          grep -B5 -A25 "does not conform\|error:\|BUILD FAILED" /tmp/xcb.log | head -300
           echo "=== BUILD OUTPUT ==="
           find build/Release-iphoneos -maxdepth 1 -name "*.app" -print
           echo "=== END ==="
+          exit $XCB
 
       - name: Install ldid
         run: brew install ldid
