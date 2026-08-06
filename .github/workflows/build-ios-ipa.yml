@@ -75,9 +75,11 @@ jobs:
           set -e
           APP=$(find ios/build/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
           echo "APP bundle: $APP"
-          find "$APP" -type f -print0 | xargs -0 file | grep 'Mach-O' | cut -d: -f1 | while read -r f; do
-            echo "ldid sign: $f"
-            ldid -S "$f"
+          find "$APP" -type f -print0 | while read -d '' -r f; do
+            if file "$f" | grep -q 'Mach-O'; then
+              echo "ldid sign: $f"
+              ldid -S "$f"
+            fi
           done
           ldid -S "$APP"
           rm -rf /tmp/Payload
