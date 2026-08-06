@@ -38,7 +38,8 @@ public class ExtensionPlatformInterface: NSObject, LibclashPlatformInterfaceProt
             settings.mtu = NSNumber(value: options.getMTU())
 
             let dnsServer = options.getDNSServerAddress()
-            let dnsSettings = NEDNSSettings(servers: [dnsServer?.value ?? ""])
+            let dnsServerValue: String = dnsServer?.value(forKey: "value") as? String ?? ""
+            let dnsSettings = NEDNSSettings(servers: [dnsServerValue])
             settings.dnsSettings = dnsSettings
 
             var ipv4Address: [String] = []
