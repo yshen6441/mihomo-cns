@@ -75,6 +75,14 @@ APP=$(find "$IOS_DIR/build/Release-iphoneos" -maxdepth 1 -name "*.app" | head -1
 [ -n "$APP" ] || { echo "error: no .app bundle found in Release-iphoneos" >&2; exit 1; }
 echo "app bundle: $APP"
 
+echo "==> patch Flutter engine: force Metal rendering (bypass jailbreak detection abort)"
+FLUTTER_BIN="$APP/Frameworks/Flutter.framework/Flutter"
+if [ -f "$FLUTTER_BIN" ]; then
+  python3 "$IOS_CLASHMI/scripts/patch_flutter_metal.py" "$FLUTTER_BIN"
+else
+  echo "warning: $FLUTTER_BIN not found; skipping Metal patch" >&2
+fi
+
 echo "==> sign Mach-O with ldid"
 sed 's/\$(AppIdentifierPrefix)//g' "$IOS_DIR/Runner/Runner.entitlements" > /tmp/ent-runner.plist
 sed 's/\$(AppIdentifierPrefix)//g' "$IOS_DIR/clashmiWidget/clashmiWidgetExtension.entitlements" > /tmp/ent-widget.plist
