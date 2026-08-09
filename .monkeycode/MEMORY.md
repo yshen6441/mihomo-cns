@@ -43,3 +43,13 @@ Entries discovered by the Agent during task execution should follow this format:
   - Dart record 位置字段用 `$1/$2/$3` 访问，命名 record 才有 `item1/item2/item3`；Karing/clashmi 私有 API 返回 `({String item1, String item2, String item3})`
   - `http.IOClient` 在 `package:http/io_client.dart`，需 import 后直接用 `IOClient()`（http 1.x 不从 `package:http/http.dart` 导出）
   - iOS 越狱 ipa 构建链路：gomobile bind -target=ios 生成 Libclash.xcframework → flutter build ios --no-codesign → ldid 签名所有 Mach-O → zip Payload
+
+[Project Knowledge Summary]
+- Date: 2026-08-09
+- Context: Discovered by Agent while building rootless iOS jailbreak deb for mihomo-cns
+- Category: Build Methods
+- Instructions:
+  - 用户偏好：不再要 iOS 越狱直装 ipa，改为 rootless deb（Sileo/dpkg 安装）
+  - rootless deb 规范：Architecture 用 `iphoneos-arm64`（rootful 是 iphoneos-arm，roothide 是 iphoneos-arm64e），文件装在 `/var/jb/` 下，deb 用 ar 手工构造（成员顺序 debian-binary + control.tar.gz + data.tar.gz），postinst 调 `/var/jb/usr/bin/uicache -p` 注册 app
+  - 打包入口：iOS/clashmi/scripts/package_rootless_deb.sh（输入已签名 .app，输出 rootless deb，版本自动读 Info.plist）
+  - 完整构建链路：iOS/clashmi/scripts/build_rootless_deb.sh 在 mac 上执行 gomobile bind iOS/libclash（mihomo-cns 核心，含 cns 协议）→ flutter build ios --no-codesign → ldid 签名（复用 ipa workflow 的 entitlements 逻辑）→ deb 打包；CI 入口 .github/workflows/build-ios-deb.yml
