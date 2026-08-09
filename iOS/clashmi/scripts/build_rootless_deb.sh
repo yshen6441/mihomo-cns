@@ -23,6 +23,7 @@ EOF
 }
 
 OUT="$DIST/clashmi-rootless-arm64.deb"
+mkdir -p "$DIST"
 
 while getopts "v:o:h" opt; do
   case "$opt" in

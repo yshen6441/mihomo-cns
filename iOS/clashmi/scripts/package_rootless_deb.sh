@@ -48,7 +48,9 @@ fi
 
 APP_NAME="ClashMi"
 JB_ROOT="var/jb"
-OUT_ABS="$(cd "$(dirname "$OUT")" && pwd -P)/$(basename "$OUT")"
+mkdir -p "$(dirname "$OUT")"
+OUT_DIR="$(cd "$(dirname "$OUT")" && pwd -P)"
+OUT_ABS="$OUT_DIR/$(basename "$OUT")"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
