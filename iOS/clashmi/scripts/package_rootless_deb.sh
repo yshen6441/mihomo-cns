@@ -60,6 +60,7 @@ CTRL_DIR="$TMP/control"
 mkdir -p "$PKG_ROOT/$JB_ROOT/Applications" "$CTRL_DIR"
 
 cp -R "$APP" "$PKG_ROOT/$JB_ROOT/Applications/$APP_NAME.app"
+find "$PKG_ROOT/$JB_ROOT/Applications/$APP_NAME.app" -type d -name "_CodeSignature" -exec rm -rf {} +
 
 SIZE_KB=$(du -sk "$PKG_ROOT" | awk '{print $1}')
 
